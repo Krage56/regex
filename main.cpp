@@ -9,6 +9,8 @@ int main()
     //getline(cin, command);
     //cmatch res;
     smatch res1{};
+    regex select_expr(R"((^SELECT)\s+([\w_,\s]+)\s+([^(from)]*)\s+)", regex::icase);
+    regex from_expr(R"((from)\s+([\w_.csv]+))", regex::icase);
     regex rex(R"((^SELECT)\s+([\w_,\s]+)\s+(from)\s+([\w_.csv]+))", regex::icase);
     regex rex1("([\\w_]+)");
     vector<string> array;
@@ -16,6 +18,32 @@ int main()
     for(const auto& el: res1){
         cout << el << endl;
     }
+    cout << "___________________" << endl;
+    smatch res2{}, res3{};
+    regex_search(command, res2, select_expr);
+    regex_search(command, res3, from_expr);
+//    for(const auto& el: res2){
+//        cout << el << endl;
+//    }
+    auto iter = res2.begin() + 2;
+    for(iter; iter != res2.end(); ++iter){
+        smatch tmp{};
+        string tmp_str(iter->str());
+        //cout << iter->str() << endl;
+        auto begin = tmp_str.cbegin();
+        auto end = tmp_str.cend();
+        while(regex_search(begin, end, tmp, rex1))
+        {
+            array.push_back(tmp.str());
+            cout << tmp.str() << endl;
+            begin += tmp.position() + tmp.str().size();
+        }
+    }
+    cout << "___________________" << endl;
+    for(const auto& el: res3){
+        cout << el << endl;
+    }
+    cout << "___________________" << endl;
 //    regex_search(command.c_str(), res, rex);
 //    if (res.empty())
 //        throw std::runtime_error("notkek");
