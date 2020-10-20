@@ -3,7 +3,7 @@
 #include "regex"
 using namespace std;
 
-[[nodiscard]] vector<string> selection_args(const string& command){
+[[nodiscard]] vector<string> selection_tokens(const string& command){
     vector<string>result;
     regex select_exp(R"((^SELECT)\s+([\w_,\s]+)\s+([^(from)]*)\s+)", regex::icase);
     regex select_spec_exp(R"((^SELECT)\s+([*\s]))", regex::icase);
@@ -18,8 +18,7 @@ using namespace std;
             string tmp_str(iter->str());
             auto begin = tmp_str.cbegin();
             auto end = tmp_str.cend();
-            while(regex_search(begin, end, tmp, columns_exp))
-            {
+            while(regex_search(begin, end, tmp, columns_exp)){
                 result.push_back(tmp.str());
                 begin += tmp.position() + tmp.str().size();
             }
@@ -33,7 +32,7 @@ using namespace std;
     }
     return result;
 }
-[[nodiscard]] vector<string> from_args(const string& command){
+[[nodiscard]] vector<string> from_token(const string& command){
     regex from_expr(R"((from)\s+([\w_.csv]+))", regex::icase);
     smatch matches;
     regex_search(command, matches, from_expr);
@@ -45,20 +44,42 @@ using namespace std;
     }
     return result;
 }
-int main()
-{
+[[nodiscard]] vector<string> where_tokens(const string& command){
+    regex where_expr(R"(^WHERE)", regex::icase);
+    smatch where_match;
+    vector<string>result(0);
+    regex_search(command, where_match, where_expr);
+    if(where_match.empty()){
+        return result;
+    }
+    regex tokenize_expr(R"(([^\s]+))", regex::icase);
+    smatch tokens;
+    regex_search(command, tokens, tokenize_expr);
+    auto begin = command.cbegin();
+    auto end = command.cend();
+    while(regex_search(begin, end, tokens, tokenize_expr)){
+        result.push_back(tokens.str());
+        begin += tokens.position() + tokens.str().size();
+    }
+    return result;
+}
+int main(){
     ifstream file("input.txt");
     string command(R"(SELECT * from trash_table.csv)");
     string command1("SELECT res1, test2,test3,test4 from trash_table.csg");
-
-    auto selection_arguments = move(selection_args(command));
+    string command_where(R"(WHERE count <= 5 AND id <= 100 OR jean xor beam)");
+    auto selection_arguments = move(selection_tokens(command));
     for(const auto& el: selection_arguments){
         cout << el << endl;
     }
     cout << "___________________" << endl;
-    auto from_argument = move(from_args(command));
+    auto from_argument = move(from_token(command));
     for(const auto& el: from_argument){
         cout << el << endl;
     }
-
+    cout << "___________________" << endl;
+    auto where_tokens_vec = move(where_tokens(command_where));
+    for(const auto& el: where_tokens_vec){
+        cout << el << endl;
+    }
 }
