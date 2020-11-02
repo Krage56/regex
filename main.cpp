@@ -1,6 +1,8 @@
 #include "iostream"
 #include "fstream"
 #include "regex"
+#include "map"
+#include "list"
 using namespace std;
 
 [[nodiscard]] vector<string> selection_tokens(const string& command){
@@ -64,12 +66,45 @@ using namespace std;
     }
     return result;
 }
+
+void data_reading(map<string, list<string>*>& columns, ifstream& stream){
+    string tmp;
+    getline(stream, tmp);
+    regex col_names_expr(R"(([\w_]+))", regex::icase);
+    regex col_value(R"((["\w_]+)(["\s\w]+))", regex::icase);
+    smatch columns_list, values_matches;
+
+    auto begin = tmp.cbegin();
+    auto end = tmp.cend();
+    vector<string> result;
+    while(regex_search(begin, end, columns_list, col_names_expr)){
+        result.push_back(columns_list.str());
+        begin += columns_list.position() + columns_list.str().size();
+    }
+
+    list<list<string>*> lists;
+    for(const auto& el: result){
+        auto* new_list = new list<string>;
+        lists.push_back(new_list);
+        columns.insert(make_pair(el, new_list));
+    }
+    while(getline(stream, tmp)){
+        begin = tmp.cbegin();
+        end = tmp.cend();
+        auto list_iter = lists.begin();
+        while(regex_search(begin, end, columns_list, col_value)){
+            (*list_iter)->push_back(columns_list[0].str());
+            ++list_iter;
+            begin += columns_list.position() + columns_list.str().size();
+        }
+    }
+}
 int main(){
-    ifstream file("input.txt");
+    //ifstream file("input.txt");
     string command(R"(SELECT * from trash_table.csv)");
     string command1("SELECT res1, test2,test3,test4 from trash_table.csg");
     string command_where(R"(WHERE count <= 5 AND id <= 100 OR jean xor beam)");
-    auto selection_arguments = move(selection_tokens(command));
+    /*auto selection_arguments = move(selection_tokens(command));
     for(const auto& el: selection_arguments){
         cout << el << endl;
     }
@@ -99,5 +134,19 @@ int main(){
     for(const auto& el: where_tokens_vec) {
         cout << el << endl;
     }
-    cout << general_string << endl;
+    cout << general_string << endl;*/
+    map<string, list<string>*> columns;
+    ifstream file("dataBase.csv");
+/*    if(file.is_open()){
+//        cout << "open" << endl;
+        }*/
+    data_reading(columns, file);
+    for(const auto& column: columns){
+        cout << column.first << ": ";
+        for(const auto& elem: (*column.second)){
+            cout << elem << " ";
+        }
+        cout << "\n";
+    }
+    file.close();
 }
