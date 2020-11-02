@@ -45,7 +45,7 @@ using namespace std;
     return result;
 }
 [[nodiscard]] vector<string> where_tokens(const string& command){
-    regex where_expr(R"(^WHERE)", regex::icase);
+    regex where_expr(R"((WHERE) (...+))", regex::icase);
     smatch where_match;
     vector<string>result(0);
     regex_search(command, where_match, where_expr);
@@ -54,9 +54,10 @@ using namespace std;
     }
     regex tokenize_expr(R"(([^\s]+))", regex::icase);
     smatch tokens;
-    regex_search(command, tokens, tokenize_expr);
-    auto begin = command.cbegin();
-    auto end = command.cend();
+    string raw_string = where_match.str();
+    regex_search(raw_string, tokens, tokenize_expr);
+    auto begin = raw_string.cbegin();
+    auto end = raw_string.cend();
     while(regex_search(begin, end, tokens, tokenize_expr)){
         result.push_back(tokens.str());
         begin += tokens.position() + tokens.str().size();
@@ -79,7 +80,24 @@ int main(){
     }
     cout << "___________________" << endl;
     auto where_tokens_vec = move(where_tokens(command_where));
-    for(const auto& el: where_tokens_vec){
+    for(const auto& el: where_tokens_vec) {
         cout << el << endl;
     }
+    string general_string = command1 + " " + command_where;
+    cout << "General string processed:" << endl;
+    selection_arguments = move(selection_tokens(general_string));
+    for(const auto& el: selection_arguments){
+        cout << el << endl;
+    }
+    cout << "___________________" << endl;
+    from_argument = move(from_token(general_string));
+    for(const auto& el: from_argument){
+        cout << el << endl;
+    }
+    cout << "___________________" << endl;
+    where_tokens_vec = move(where_tokens(general_string));
+    for(const auto& el: where_tokens_vec) {
+        cout << el << endl;
+    }
+    cout << general_string << endl;
 }
