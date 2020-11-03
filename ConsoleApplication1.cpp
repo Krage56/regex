@@ -7,10 +7,10 @@
 #include <algorithm>
 #include <stack>
 using namespace std;
-enum typeOfToken {
-	num_token,
-	str_token,
-	column_token
+enum class Token {
+	Number,
+	String,
+	ColumnName
 };
 
 #if 0
@@ -173,15 +173,15 @@ queue<string> shuntingYard(const vector<string>& conditions) {
 	}
 	return q;
 }
-typeOfToken getType(const string& s, const map<string, list<string>::iterator>& row) {
+Token getType(const string& s, const map<string, list<string>::iterator>& row) {
 	if (is_number(s)) {
-		return typeOfToken::num_token;
+		return Token::Number;
 	}
 	else if (row.find(s) != row.end()) {
-		return typeOfToken::column_token;
+		return Token::ColumnName;
 	}
 	else {
-		return typeOfToken::str_token;
+		return Token::String;
 	}
 }
 bool calc(queue<string> q, const map<string, list<string>::iterator>& row) {
@@ -196,7 +196,7 @@ bool calc(queue<string> q, const map<string, list<string>::iterator>& row) {
 				operands_str.push_back(localStack.top());
 				localStack.pop();
 			}
-			if (getType(operands_str[0], row) == typeOfToken::num_token) {
+			if (getType(operands_str[0], row) == Token::Number) {
 				for_each(operands_str.begin(), operands_str.end(), [&operands_int](const string& s) {
 					operands_int.push_back(atoi(s.c_str())); });
 			}
@@ -272,12 +272,12 @@ bool calc(queue<string> q, const map<string, list<string>::iterator>& row) {
 			}
 		}
 		else {
-			typeOfToken type = getType(tmp, row);
-			if (type == typeOfToken::str_token || type == typeOfToken::num_token) {
+			Token type = getType(tmp, row);
+			if (type == Token::String || type == Token::Number) {
 				localStack.push(tmp);
 			}
 			else {
-				while (type == typeOfToken::column_token) {
+				while (type == Token::ColumnName) {
 					type = getType(*row.at(tmp), row);
 					tmp = *row.at(tmp);
 				}
