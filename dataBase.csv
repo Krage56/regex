@@ -1,0 +1,4 @@
+id_dept, name, value
+101, "East department", "high"
+201, "West department", "low"
+299, "Prinston department", "high"
