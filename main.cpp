@@ -156,7 +156,7 @@ bool isOperator(const string& s) {
 }
 int getOperatorPriority(const string& oper) {
     vector<string> low = { "AND", "OR" };
-    vector<string> mid = { "<", ">", "<=", ">=","==" };
+    vector<string> mid = { "<", ">", "<=", ">=","=" };
     for (const auto& el : low) {
         if (oper == el) {
             return 1;
@@ -325,6 +325,8 @@ void scriptProcessing(istream& script) {
     string table_file;
     do{
         getline(script, tmp);
+        if(tmp == R"(\quit)")
+            return;
         selection_tokens = selectionTokens(tmp);
     }while(selection_tokens.empty());
 
@@ -366,7 +368,6 @@ void scriptProcessing(istream& script) {
         bool row_accept = q.empty() || calc(q, rows);
         if (row_accept) {
             all ? printSelectedColumns(rows) : printSelectedColumns(rows, selection_tokens);
-            cout << "\n";
         }
         for(auto& item: rows){
             ++(item.second);
@@ -376,5 +377,9 @@ void scriptProcessing(istream& script) {
 
 
 int main() {
-    scriptProcessing(cin);
+    while(true){
+        scriptProcessing(cin);
+        break;
+    }
+    return 0;
 }
